@@ -5,6 +5,8 @@ import metadata_parser
 import json
 from datetime import datetime
 from celery import Celery
+import time
+
 
 # Broker URL for RabbitMQ task queue
 # broker_url = 'amqp://guest@localhost'
@@ -37,9 +39,10 @@ def get_ogp_info(msg_id=None, url=None):
     rec['status'] = 'pending'
     url_db.set(msg_id, json.dumps(rec))
     print('done????')
-    sleep(100000)
+    time.sleep(30)
     data = {}
     try:
+        print("scraping..........")
         page = metadata_parser.MetadataParser(url=url)
         form['id'] = msg_id
         form['url'] = page.get_discrete_url(require_public_global=False)
@@ -53,17 +56,17 @@ def get_ogp_info(msg_id=None, url=None):
             img['url'] = i
             form['images'].append(img)
 
-        # rec['og_obg'] = og
         rec['valid'] = 'ok'
-        # TODO crape form here
         rec['form'] = form
         rec['status'] = 'done'
         url_db.set(msg_id, json.dumps(rec))
+        print('done!!!')
         return True
     except:
         rec['valid'] = 'error'
         rec['status'] = 'error'
         url_db.set(msg_id, json.dumps(rec))
+        print('error!!')
         return False
 
 
@@ -104,12 +107,12 @@ def get_url_record_by_url(url):
 @app.route('/stories/<path:msg_id>', methods=['GET'])
 def get_stories(msg_id=None):
     if msg_id == None:
-        return ('no msg id')
+        return 'No msg id!', 400
     url_record = get_dict_from_db(msg_id)
     if url_record == None:
-        return ('not found ')
+        return 'Not found!', 400
     elif url_record['status'] != 'done':
-        return("status: "+url_record['status'])
+        return ("status: "+url_record['status']), 400
     else:
         return jsonify(url_record['form'])
 
@@ -119,7 +122,7 @@ def set_stories():
     url = request.args.get('url')
     print('url %s' % url)
     if url == None:
-        return "error"
+        return 'Error! No URL!', 400
     else:
         c_url = get_canonized_url(url)
         print(c_url)
