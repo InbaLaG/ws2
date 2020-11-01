@@ -129,7 +129,7 @@ def set_stories():
             return str(exist_rec[0])
         else:
             if len(url_db.keys()) == 0:
-                print("no db")
+                print("no db\n")
                 msg_id = 1111
             else:
                 msg_id = max([int(_) for _ in url_db.keys()]) + 1
