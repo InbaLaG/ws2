@@ -37,6 +37,7 @@ def get_ogp_info(msg_id=None, url=None):
     rec['status'] = 'pending'
     url_db.set(msg_id, json.dumps(rec))
     print('done????')
+    sleep(100000)
     data = {}
     try:
         page = metadata_parser.MetadataParser(url=url)
@@ -100,7 +101,7 @@ def get_url_record_by_url(url):
     return None
 
 
-@app.route('/stories', methods=['GET'])
+@app.route('/stories/<path:msg_id>', methods=['GET'])
 def get_stories(msg_id=None):
     if msg_id == None:
         return ('no msg id')
